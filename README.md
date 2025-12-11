@@ -1,4 +1,3 @@
-# clinical-reasoning
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -14,12 +13,22 @@
     * {
       box-sizing: border-box;
     }
+    :root {
+      --bg-main: #0f172a;
+      --bg-surface: #f9fafb;
+      --accent: #0ea5e9;
+      --accent-dark: #0284c7;
+      --text-main: #0f172a;
+      --text-sub: #6b7280;
+      --bubble-doctor: #0ea5e9;
+      --bubble-patient: #e5e7eb;
+    }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
                    "Hiragino Sans", "Yu Gothic", sans-serif;
-      background: #f5f5f7;
-      color: #111;
+      background: radial-gradient(circle at top, #1f2933 0, #020617 55%);
+      color: var(--text-main);
       display: flex;
       justify-content: center;
       align-items: stretch;
@@ -29,64 +38,110 @@
       display: flex;
       flex-direction: column;
       width: 100%;
-      max-width: 640px;
+      max-width: 720px;
       height: 100vh;
-      background: #ffffff;
-      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+      background: var(--bg-surface);
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
     }
+
+    /* ヘッダー（アプリタイトルバー風） */
     header {
-      padding: 12px 16px;
-      border-bottom: 1px solid #e5e5ea;
+      padding: 12px 18px 10px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+      background: linear-gradient(135deg, #0f172a, #0b5ed7);
+      color: #f9fafb;
+    }
+    header .title-row {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
     }
     header .title {
-      font-weight: 600;
-      font-size: 16px;
+      font-weight: 650;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+    }
+    header .badge {
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.6);
     }
     header .subtitle {
-      font-size: 12px;
-      color: #6e6e73;
+      margin-top: 6px;
+      font-size: 11px;
+      color: rgba(226, 232, 240, 0.9);
+    }
+
+    /* 症例選択エリア（カード風） */
+    .case-wrapper {
+      padding: 10px 14px 6px;
+      background: #e5e7eb;
+    }
+    .case-card {
+      background: #f9fafb;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      padding: 8px 10px 10px;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
     }
     .case-selector {
       display: flex;
       gap: 8px;
-      padding: 8px 16px 10px;
-      border-bottom: 1px solid #e5e5ea;
-      background: #fafafa;
+      margin-bottom: 4px;
     }
     .case-selector input {
       flex: 1;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid #d0d0d7;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
       font-size: 13px;
+      background: #f3f4f6;
+    }
+    .case-selector input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #ffffff;
+      box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.2);
     }
     .case-selector button {
-      padding: 6px 10px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
       border: none;
       font-size: 13px;
       font-weight: 600;
-      background: #007aff;
+      background: var(--accent);
       color: white;
+      white-space: nowrap;
     }
+    .case-selector button:active {
+      background: var(--accent-dark);
+    }
+    .case-status {
+      font-size: 11px;
+      color: var(--text-sub);
+      line-height: 1.4;
+    }
+
+    /* チャットエリア */
     main {
       flex: 1;
       overflow-y: auto;
-      padding: 12px 12px 0;
-      background: #f5f5f7;
+      padding: 10px 10px 0;
+      background: #edf2f7;
+      scroll-behavior: smooth;
     }
     .system-message {
       text-align: center;
       font-size: 11px;
-      color: #6e6e73;
-      margin: 4px 0 8px;
+      color: #9ca3af;
+      margin: 4px 0 10px;
     }
     .message-row {
       display: flex;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
     .message-row.doctor {
       justify-content: flex-end;
@@ -96,84 +151,119 @@
     }
     .bubble {
       max-width: 80%;
-      padding: 8px 10px;
-      border-radius: 16px;
+      padding: 9px 11px;
+      border-radius: 18px;
       font-size: 14px;
       line-height: 1.4;
       word-wrap: break-word;
       white-space: pre-wrap;
+      position: relative;
     }
     .doctor .bubble {
-      background: #007aff;
-      color: white;
+      background: var(--bubble-doctor);
+      color: #ffffff;
       border-bottom-right-radius: 4px;
     }
     .patient .bubble {
-      background: #e5e5ea;
-      color: #000;
+      background: var(--bubble-patient);
+      color: #111827;
       border-bottom-left-radius: 4px;
     }
+
+    /* 入力フォーム（下に浮いた感じ） */
     form {
-      padding: 8px 10px 12px;
-      border-top: 1px solid #e5e5ea;
+      padding: 6px 10px calc(env(safe-area-inset-bottom, 0) + 6px);
+      background: transparent;
+    }
+    .input-shell {
       background: #ffffff;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      padding: 4px 4px 4px 12px;
       display: flex;
-      gap: 8px;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
     }
     form input {
       flex: 1;
-      padding: 8px 10px;
-      border-radius: 18px;
-      border: 1px solid #d0d0d7;
+      padding: 6px 4px;
+      border-radius: 999px;
+      border: none;
       font-size: 14px;
+      background: transparent;
+    }
+    form input:focus {
+      outline: none;
     }
     form button {
-      border-radius: 18px;
+      border-radius: 999px;
       border: none;
-      padding: 0 14px;
+      padding: 7px 14px;
       font-size: 14px;
       font-weight: 600;
-      background: #007aff;
+      background: var(--accent);
       color: white;
     }
-    .case-meta {
-      font-size: 11px;
-      color: #6e6e73;
-      margin-top: 2px;
+    form button:active {
+      background: var(--accent-dark);
+    }
+
+    @media (min-width: 768px) {
+      header {
+        padding-inline: 24px;
+      }
+      .case-wrapper {
+        padding-inline: 24px;
+      }
+      main {
+        padding-inline: 18px;
+      }
+      form {
+        padding-inline: 18px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header>
-      <div class="title">臨床推論トレーナー</div>
-      <div class="subtitle">あなたが医師役、国家試験の症例が患者さん役</div>
+      <div class="title-row">
+        <div class="title">臨床推論トレーナー</div>
+        <div class="badge">Clinical Reasoning Lab</div>
+      </div>
+      <div class="subtitle">あなたが医師役。医師国家試験の症例が、患者さんとして答えてくれる。</div>
     </header>
 
-    <div class="case-selector">
-      <input id="caseIdInput" placeholder="例: 117A-5 など（症例ID）">
-      <button id="loadCaseBtn">症例セット</button>
+    <div class="case-wrapper">
+      <div class="case-card">
+        <div class="case-selector">
+          <input id="caseIdInput" placeholder="例: 117A-5 など（症例ID）">
+          <button id="loadCaseBtn">症例セット</button>
+        </div>
+        <div id="caseStatus" class="case-status">
+          症例IDを入力して「症例セット」を押すと、その症例の患者さんとして話し始めます。
+        </div>
+      </div>
     </div>
 
     <main id="chatContainer"></main>
 
     <form id="messageForm">
-      <input id="messageInput" placeholder="医師として質問を書いてください（例: 本日はどうされましたか？）">
-      <button type="submit">送信</button>
+      <div class="input-shell">
+        <input id="messageInput" placeholder="医師として質問を書いてください（例: 本日はどうされましたか？）">
+        <button type="submit">送信</button>
+      </div>
     </form>
   </div>
 
   <script>
-    // ---- ここに症例データを追加していく ----
-    // ★実際の国試問題を使うときは、自分の端末だけでの個人利用にとどめてね。
+    // ---- 症例データ ----
     const cases = {
-      // ▼サンプル症例（国試とは無関係）
       "sample-1": {
         title: "サンプル症例：上気道炎",
         note: "国試とは関係ないデモ症例です。",
-        // 最初にちょっとだけ表示する背景
         backdrop: "30歳男性。2日前からの発熱と咽頭痛を主訴に受診した患者さんを想定しています。",
-        // 以下がチャットの「引き出し」
         cc: "2日前からの発熱と、喉の痛みがつらくて来ました。",
         hpi: "2日前の夕方から38℃台の発熱と咽頭痛が出ました。咳は少しで、痰はあまり出ません。市販の解熱鎮痛薬を飲むと一時的に楽になりますが、また熱が上がってきます。呼吸が苦しい感じはありません。",
         pmh: "これまで大きな病気はありません。入院歴も手術歴もありません。",
@@ -189,38 +279,16 @@
         diagnosis: "かぜ症候群（上気道炎）",
         fallback: "すみません、その質問についてはこのサンプル症例では設定していません。別の聞き方で質問してみてください。"
       }
-
-      // ▼ここに実際の国家試験用の症例を自分で追加していくイメージ
-      /*
-      "117A-5": {
-        title: "第117回A問題 5（仮）",
-        note: "自分で入力した症例",
-        backdrop: "◯歳◯性。◯◯を主訴に受診した。",
-        cc: "...",
-        hpi: "...",
-        pmh: "...",
-        meds: "...",
-        allergies: "...",
-        family: "...",
-        social: "...",
-        ros: "...",
-        pe: "...",
-        labs_basic: "...",
-        labs_advanced: "...",
-        imaging: "...",
-        diagnosis: "...",
-        fallback: "..."
-      }
-      */
+      // ここに "117A-5": { ... } などを今後追加していく
     };
 
     let currentCase = null;
-
     const chatContainer = document.getElementById("chatContainer");
     const caseIdInput = document.getElementById("caseIdInput");
     const loadCaseBtn = document.getElementById("loadCaseBtn");
     const messageForm = document.getElementById("messageForm");
     const messageInput = document.getElementById("messageInput");
+    const caseStatus = document.getElementById("caseStatus");
 
     function addSystemMessage(text) {
       const div = document.createElement("div");
@@ -256,19 +324,16 @@
 
       const m = normalize(message);
 
-      // あいさつ
       if (/こんにちは|こんばんは|おはよう|よろしく|はじめまして/.test(m)) {
         return "よろしくお願いします。今日はよろしくお願いします。";
       }
 
-      // 主訴
       if (m.includes("どうされました") || m.includes("主訴") ||
           m.includes("一番つらい") || m.includes("今日は何") ||
           m.includes("どのような症状")) {
         return currentCase.cc || "なんとなく体調が悪くて来ました。";
       }
 
-      // 現病歴・経過
       if (m.includes("いつから") || m.includes("経過") ||
           m.includes("どのように") || m.includes("発症") ||
           m.includes("悪くなっ") || m.includes("良くなっ") ||
@@ -276,34 +341,29 @@
         return currentCase.hpi || currentCase.cc || "特に変わりはありません。";
       }
 
-      // 既往歴
       if (m.includes("既往") || m.includes("今まで") ||
           m.includes("大きな病気") || m.includes("入院") ||
           m.includes("手術")) {
         return currentCase.pmh || "これまで大きな病気や入院はありません。";
       }
 
-      // 内服薬
       if (m.includes("お薬") || m.includes("内服") ||
           m.includes("飲んでいる薬") || m.includes("服用") ||
           m.includes("薬を飲んで")) {
         return currentCase.meds || "今は特に薬は飲んでいません。";
       }
 
-      // アレルギー
       if (m.includes("アレルギー") || m.includes("薬で") ||
           m.includes("湿疹") || m.includes("じんましん") ||
           m.includes("食べ物で")) {
         return currentCase.allergies || "特にアレルギーはありません。";
       }
 
-      // 家族歴
       if (m.includes("家族") || m.includes("ご家族") ||
           m.includes("遺伝") || m.includes("身内")) {
         return currentCase.family || "特に家族に大きな病気はいません。";
       }
 
-      // 生活歴・社会歴
       if (m.includes("お仕事") || m.includes("仕事") ||
           m.includes("職業") || m.includes("喫煙") ||
           m.includes("たばこ") || m.includes("タバコ") ||
@@ -312,14 +372,12 @@
         return currentCase.social || "事務の仕事をしています。喫煙はなく、お酒は少しだけです。";
       }
 
-      // 他覚症状・ROS
       if (m.includes("他に") || m.includes("気になること") ||
           m.includes("ほかに") || m.includes("症状") ||
           m.includes("全身") || m.includes("他には")) {
         return currentCase.ros || "他には特に気になる症状はありません。";
       }
 
-      // 身体診察
       if (m.includes("診察") || m.includes("身体診察") ||
           m.includes("触らせて") || m.includes("聴診") ||
           m.includes("バイタル") || m.includes("身体所見") ||
@@ -327,7 +385,6 @@
         return currentCase.pe || "診察では明らかな異常はありません。";
       }
 
-      // 採血・検査
       if (m.includes("採血") || m.includes("血液検査") ||
           m.includes("検査結果") || m.includes("生化学") ||
           m.includes("血算") || m.includes("データ")) {
@@ -340,7 +397,6 @@
         return "まだ採血の結果は出ていません。";
       }
 
-      // 画像検査
       if (m.includes("レントゲン") || m.includes("X線") ||
           m.includes("CT") || m.includes("MRI") ||
           m.includes("超音波") || m.includes("エコー") ||
@@ -348,7 +404,6 @@
         return currentCase.imaging || "まだ画像検査は行っていません。";
       }
 
-      // 診断
       if (m.includes("診断") || m.includes("病名") ||
           m.includes("何の病気") || m.includes("考えられる疾患") ||
           m.includes("最も考えられる")) {
@@ -358,7 +413,6 @@
         return "まだはっきりした病名は分かっていません。";
       }
 
-      // それ以外
       return currentCase.fallback ||
              "すみません、その質問がこの症例ではうまく設定されていません。別の聞き方で質問してみてもらえますか？";
     }
@@ -368,11 +422,16 @@
       const c = cases[key];
       currentCase = c || null;
       clearChat();
+
       if (!c) {
         addSystemMessage("症例ID「" + key + "」は登録されていません。上のコード内の cases に症例を追加してください。");
+        caseStatus.textContent = "症例ID「" + key + "」はまだ登録されていません。sample-1 のように、コード内の cases オブジェクトに症例を追加してください。";
         return;
       }
+
+      caseStatus.textContent = "現在の症例: " + key + " ｜ " + (c.title || "無題症例");
       addSystemMessage("症例「" + key + " : " + (c.title || "無題症例") + "」を読み込みました。");
+
       if (c.note) {
         addSystemMessage(c.note);
       }
@@ -403,7 +462,7 @@
       const reply = getPatientReply(text);
       setTimeout(() => {
         addChatMessage(reply, "patient");
-      }, 150); // ちょっとだけ間を置く
+      }, 150);
       messageInput.value = "";
       messageInput.focus();
     });
