@@ -256,138 +256,221 @@
       </div>
     </form>
   </div>
+<script>
+  // ---- 症例データ ----
+  const cases = {
+    "sample-1": {
+      title: "サンプル症例：上気道炎",
+      note: "国試とは関係ないデモ症例です。",
+      backdrop: "30歳男性。2日前からの発熱と咽頭痛を主訴に受診した患者さんを想定しています。",
+      cc: "2日前からの発熱と、喉の痛みがつらくて来ました。",
+      hpi: "2日前の夕方から38℃台の発熱と咽頭痛が出ました。咳は少しで、痰はあまり出ません。市販の解熱鎮痛薬を飲むと一時的に楽になりますが、また熱が上がってきます。呼吸が苦しい感じはありません。",
+      pmh: "これまで大きな病気はありません。入院歴も手術歴もありません。",
+      meds: "今は市販の解熱鎮痛薬（アセトアミノフェン配合）だけ飲んでいます。",
+      allergies: "薬や食べ物のアレルギーは特に言われたことはありません。",
+      family: "家族に特別な遺伝性の病気はありません。",
+      social: "会社員で事務の仕事をしています。喫煙歴はなく、お酒は週に1〜2回ビールを1杯程度です。周囲で同じような風邪症状の人が何人かいます。",
+      ros: "鼻水が少し出ますが、胸の痛みや強い呼吸苦、腹痛、下痢などはありません。",
+      pe: "体温38.2℃、脈拍96/分、血圧120/70mmHg、呼吸数16/分、SpO2 98％（室内気）。咽頭発赤あり、扁桃に白苔ははっきりしません。頸部リンパ節が軽度腫大しています。胸部聴診で明らかなラ音は聴取しません。",
+      labs_basic: "CRP軽度上昇、白血球数はやや増加していますが、著明な異常はありません。",
+      labs_advanced: "迅速インフルエンザ抗原検査は陰性でした。",
+      imaging: "胸部X線写真では明らかな浸潤影は認めません。",
+      diagnosis: "かぜ症候群（上気道炎）",
+      fallback: "すみません、その質問についてはこのサンプル症例では設定していません。別の聞き方で質問してみてください。"
+    }
+    // 今後ここに "117A-5": { ... } などを追加していく
+  };
 
-  <script>
-    // ---- 症例データ ----
-    const cases = {
-      "sample-1": {
-        title: "サンプル症例：上気道炎",
-        note: "国試とは関係ないデモ症例です。",
-        backdrop: "30歳男性。2日前からの発熱と咽頭痛を主訴に受診した患者さんを想定しています。",
-        cc: "2日前からの発熱と、喉の痛みがつらくて来ました。",
-        hpi: "2日前の夕方から38℃台の発熱と咽頭痛が出ました。咳は少しで、痰はあまり出ません。市販の解熱鎮痛薬を飲むと一時的に楽になりますが、また熱が上がってきます。呼吸が苦しい感じはありません。",
-        pmh: "これまで大きな病気はありません。入院歴も手術歴もありません。",
-        meds: "今は市販の解熱鎮痛薬（アセトアミノフェン配合）だけ飲んでいます。",
-        allergies: "薬や食べ物のアレルギーは特に言われたことはありません。",
-        family: "家族に特別な遺伝性の病気はありません。",
-        social: "会社員で事務の仕事をしています。喫煙歴はなく、お酒は週に1〜2回ビールを1杯程度です。周囲で同じような風邪症状の人が何人かいます。",
-        ros: "鼻水が少し出ますが、胸の痛みや強い呼吸苦、腹痛、下痢などはありません。",
-        pe: "体温38.2℃、脈拍96/分、血圧120/70mmHg、呼吸数16/分、SpO2 98％（室内気）。咽頭発赤あり、扁桃に白苔ははっきりしません。頸部リンパ節が軽度腫大しています。胸部聴診で明らかなラ音は聴取しません。",
-        labs_basic: "CRP軽度上昇、白血球数はやや増加していますが、著明な異常はありません。",
-        labs_advanced: "迅速インフルエンザ抗原検査は陰性でした。",
-        imaging: "胸部X線写真では明らかな浸潤影は認めません。",
-        diagnosis: "かぜ症候群（上気道炎）",
-        fallback: "すみません、その質問についてはこのサンプル症例では設定していません。別の聞き方で質問してみてください。"
+  // ---- メッセージの「意図」を判定するためのキーワード辞書 ----
+  const intentPatterns = {
+    cc: [
+      "どうされました", "どうしました", "どんな症状", "主訴",
+      "一番つらい", "一番つらいところ", "何がつらい", "何が気になって",
+      "どこが悪い", "どのような症状", "今日は何"
+    ],
+    hpi: [
+      "いつから", "どれくらい前", "どれぐらい前", "どれくらい続い", "どれぐらい続い",
+      "経過", "症状の経過", "発症", "発症時期", "悪くなっ", "良くなっ",
+      "変化", "きっかけ", "初めに", "最初に", "最初は", "だんだん", "徐々に", "急に"
+    ],
+    pmh: [
+      "既往", "既往歴", "今までの病気", "過去の病気", "昔の病気",
+      "持病", "慢性疾患", "入院歴", "入院したこと", "手術歴", "手術したこと"
+    ],
+    meds: [
+      "お薬", "薬", "内服", "服薬", "服用", "飲んでいる薬", "飲んでる薬",
+      "処方薬", "市販薬", "サプリ", "飲んでいるお薬", "常用薬"
+    ],
+    allergies: [
+      "アレルギー", "アレルギーは", "薬でかゆ", "薬で蕁麻疹",
+      "じんましん", "湿疹", "食べ物で", "食物アレルギー"
+    ],
+    family: [
+      "家族", "ご家族", "家系", "遺伝", "遺伝的", "親や兄弟", "身内", "家族歴"
+    ],
+    social: [
+      "お仕事", "仕事", "ご職業", "職業", "働いて", "勤務",
+      "喫煙", "タバコ", "たばこ", "煙草", "飲酒", "お酒",
+      "生活習慣", "生活", "運動", "睡眠", "ストレス"
+    ],
+    ros: [
+      "他に", "ほかに", "他は", "ほかは", "他の症状", "全身", "全体的",
+      "気になること", "その他に", "他で気になる"
+    ],
+    pe: [
+      "診察", "身体診察", "身体を見", "身体を診", "触診", "聴診", "打診", "視診",
+      "身体所見", "理学所見", "バイタル", "血圧", "脈拍", "体温", "呼吸数", "SpO2"
+    ],
+    labs: [
+      "採血", "血液検査", "血液データ", "検査結果", "血液データ", "生化学",
+      "血算", "データ", "検査の値", "血の検査"
+    ],
+    imaging: [
+      "レントゲン", "X線", "エックス線", "CT", "シーティー",
+      "MRI", "エムアールアイ", "超音波", "エコー", "画像", "画像検査", "CT検査", "MRI検査"
+    ],
+    dx: [
+      "診断", "病名", "何の病気", "考えられる病気", "鑑別", "確定診断",
+      "最も考えられる", "一番疑う", "どんな病気"
+    ]
+  };
+
+  // 意図ごとの優先順位（同点のときのタイブレーク用）
+  const intentPriority = [
+    "cc", "hpi", "pmh", "meds", "allergies",
+    "family", "social", "ros", "pe", "labs", "imaging", "dx"
+  ];
+
+  let currentCase = null;
+
+  const chatContainer = document.getElementById("chatContainer");
+  const caseIdInput   = document.getElementById("caseIdInput");
+  const loadCaseBtn   = document.getElementById("loadCaseBtn");
+  const messageForm   = document.getElementById("messageForm");
+  const messageInput  = document.getElementById("messageInput");
+  const caseStatus    = document.getElementById("caseStatus");
+
+  function addSystemMessage(text) {
+    const div = document.createElement("div");
+    div.className = "system-message";
+    div.textContent = text;
+    chatContainer.appendChild(div);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function addChatMessage(text, sender) {
+    const row = document.createElement("div");
+    row.className = "message-row " + sender;
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    chatContainer.appendChild(row);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function clearChat() {
+    chatContainer.innerHTML = "";
+  }
+
+  function normalize(text) {
+    return text.replace(/　/g, " ").trim();
+  }
+
+  // ---- メッセージから「どの意図か」をざっくりスコアリングして決める ----
+  function detectIntent(message) {
+    const m = normalize(message);
+    const scores = {};
+
+    // 初期化
+    for (const key of Object.keys(intentPatterns)) {
+      scores[key] = 0;
+    }
+
+    // キーワードごとにスコアを加算
+    for (const [intent, patterns] of Object.entries(intentPatterns)) {
+      patterns.forEach(pat => {
+        if (m.includes(pat)) {
+          // キーワードがそのまま入っていたら +2 点
+          scores[intent] += 2;
+        }
+      });
+
+      // 簡単な正規表現パターンも追加で見る
+      if (intent === "hpi") {
+        if (/何日.*前/.test(m) || /何日くらい/.test(m) || /何日ぐらい/.test(m)) {
+          scores[intent] += 2;
+        }
       }
-      // ここに "117A-5": { ... } などを今後追加していく
-    };
-
-    let currentCase = null;
-    const chatContainer = document.getElementById("chatContainer");
-    const caseIdInput = document.getElementById("caseIdInput");
-    const loadCaseBtn = document.getElementById("loadCaseBtn");
-    const messageForm = document.getElementById("messageForm");
-    const messageInput = document.getElementById("messageInput");
-    const caseStatus = document.getElementById("caseStatus");
-
-    function addSystemMessage(text) {
-      const div = document.createElement("div");
-      div.className = "system-message";
-      div.textContent = text;
-      chatContainer.appendChild(div);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    function addChatMessage(text, sender) {
-      const row = document.createElement("div");
-      row.className = "message-row " + sender;
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.textContent = text;
-      row.appendChild(bubble);
-      chatContainer.appendChild(row);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    function clearChat() {
-      chatContainer.innerHTML = "";
-    }
-
-    function normalize(text) {
-      return text.trim();
-    }
-
-    function getPatientReply(message) {
-      if (!currentCase) {
-        return "まずは上の欄に国家試験の問題番号（症例ID）を入力して「症例セット」を押してください。";
+      if (intent === "labs") {
+        if (/検査.*値/.test(m)) { scores[intent] += 2; }
       }
-
-      const m = normalize(message);
-
-      if (/こんにちは|こんばんは|おはよう|よろしく|はじめまして/.test(m)) {
-        return "よろしくお願いします。今日はよろしくお願いします。";
+      if (intent === "imaging") {
+        if (/画像.*検査/.test(m)) { scores[intent] += 2; }
       }
+    }
 
-      if (m.includes("どうされました") || m.includes("主訴") ||
-          m.includes("一番つらい") || m.includes("今日は何") ||
-          m.includes("どのような症状")) {
+    // 一番スコアが高い意図を選ぶ
+    let bestIntent = null;
+    let bestScore  = 0;
+
+    for (const intent of intentPriority) {
+      const s = scores[intent];
+      if (s > bestScore) {
+        bestScore = s;
+        bestIntent = intent;
+      }
+    }
+
+    // どれも0なら「意図不明」とする
+    if (bestScore === 0) return null;
+    return bestIntent;
+  }
+
+  function getPatientReply(message) {
+    if (!currentCase) {
+      return "まずは上の欄に国家試験の問題番号（症例ID）を入力して「症例セット」を押してください。";
+    }
+
+    const m = normalize(message);
+
+    // あいさつ系は特別扱い
+    if (/こんにちは|こんばんは|おはよう|よろしく|はじめまして|ありがとう/.test(m)) {
+      return "こちらこそ、よろしくお願いします。何でも聞いてください。";
+    }
+
+    const intent = detectIntent(m);
+
+    // 意図に応じて返答を分ける
+    switch (intent) {
+      case "cc":
         return currentCase.cc || "なんとなく体調が悪くて来ました。";
-      }
 
-      if (m.includes("いつから") || m.includes("経過") ||
-          m.includes("どのように") || m.includes("発症") ||
-          m.includes("悪くなっ") || m.includes("良くなっ") ||
-          m.includes("きっかけ")) {
-        return currentCase.hpi || currentCase.cc || "特に変わりはありません。";
-      }
+      case "hpi":
+        return currentCase.hpi || currentCase.cc || "特に大きな変化はありません。";
 
-      if (m.includes("既往") || m.includes("今まで") ||
-          m.includes("大きな病気") || m.includes("入院") ||
-          m.includes("手術")) {
+      case "pmh":
         return currentCase.pmh || "これまで大きな病気や入院はありません。";
-      }
 
-      if (m.includes("お薬") || m.includes("内服") ||
-          m.includes("飲んでいる薬") || m.includes("服用") ||
-          m.includes("薬を飲んで")) {
+      case "meds":
         return currentCase.meds || "今は特に薬は飲んでいません。";
-      }
 
-      if (m.includes("アレルギー") || m.includes("薬で") ||
-          m.includes("湿疹") || m.includes("じんましん") ||
-          m.includes("食べ物で")) {
+      case "allergies":
         return currentCase.allergies || "特にアレルギーはありません。";
-      }
 
-      if (m.includes("家族") || m.includes("ご家族") ||
-          m.includes("遺伝") || m.includes("身内")) {
+      case "family":
         return currentCase.family || "特に家族に大きな病気はいません。";
-      }
 
-      if (m.includes("お仕事") || m.includes("仕事") ||
-          m.includes("職業") || m.includes("喫煙") ||
-          m.includes("たばこ") || m.includes("タバコ") ||
-          m.includes("飲酒") || m.includes("お酒") ||
-          m.includes("生活") || m.includes("運動")) {
-        return currentCase.social || "事務の仕事をしています。喫煙はなく、お酒は少しだけです。";
-      }
+      case "social":
+        return currentCase.social || "ふつうに仕事をしています。喫煙はなく、お酒は少しだけです。";
 
-      if (m.includes("他に") || m.includes("気になること") ||
-          m.includes("ほかに") || m.includes("症状") ||
-          m.includes("全身") || m.includes("他には")) {
+      case "ros":
         return currentCase.ros || "他には特に気になる症状はありません。";
-      }
 
-      if (m.includes("診察") || m.includes("身体診察") ||
-          m.includes("触らせて") || m.includes("聴診") ||
-          m.includes("バイタル") || m.includes("身体所見") ||
-          m.includes("理学所見")) {
+      case "pe":
         return currentCase.pe || "診察では明らかな異常はありません。";
-      }
 
-      if (m.includes("採血") || m.includes("血液検査") ||
-          m.includes("検査結果") || m.includes("生化学") ||
-          m.includes("血算") || m.includes("データ")) {
+      case "labs": {
         if (currentCase.labs_basic || currentCase.labs_advanced) {
           return [
             currentCase.labs_basic,
@@ -397,78 +480,79 @@
         return "まだ採血の結果は出ていません。";
       }
 
-      if (m.includes("レントゲン") || m.includes("X線") ||
-          m.includes("CT") || m.includes("MRI") ||
-          m.includes("超音波") || m.includes("エコー") ||
-          m.includes("画像")) {
+      case "imaging":
         return currentCase.imaging || "まだ画像検査は行っていません。";
-      }
 
-      if (m.includes("診断") || m.includes("病名") ||
-          m.includes("何の病気") || m.includes("考えられる疾患") ||
-          m.includes("最も考えられる")) {
+      case "dx":
         if (currentCase.diagnosis) {
           return "最終的には「" + currentCase.diagnosis + "」と説明を受けました。";
         }
         return "まだはっきりした病名は分かっていません。";
-      }
 
-      return currentCase.fallback ||
-             "すみません、その質問がこの症例ではうまく設定されていません。別の聞き方で質問してみてもらえますか？";
+      default:
+        // ここに来たら intent をうまく判定できなかった場合
+        return currentCase.fallback ||
+               "すみません、その質問がこの症例ではうまく設定されていません。別の聞き方で質問してみてもらえますか？";
     }
+  }
 
-    function loadCaseById(id) {
-      const key = id.trim();
-      const c = cases[key];
-      currentCase = c || null;
-      clearChat();
+  function loadCaseById(id) {
+    const key = id.trim();
+    const c = cases[key];
+    currentCase = c || null;
+    clearChat();
 
-      if (!c) {
-        addSystemMessage("症例ID「" + key + "」は登録されていません。上のコード内の cases に症例を追加してください。");
+    if (!c) {
+      addSystemMessage("症例ID「" + key + "」は登録されていません。上のコード内の cases に症例を追加してください。");
+      if (caseStatus) {
         caseStatus.textContent = "症例ID「" + key + "」はまだ登録されていません。sample-1 のように、コード内の cases オブジェクトに症例を追加してください。";
-        return;
       }
-
-      caseStatus.textContent = "現在の症例: " + key + " ｜ " + (c.title || "無題症例");
-      addSystemMessage("症例「" + key + " : " + (c.title || "無題症例") + "」を読み込みました。");
-
-      if (c.note) {
-        addSystemMessage(c.note);
-      }
-      if (c.backdrop) {
-        addChatMessage(c.backdrop, "patient");
-      } else {
-        addChatMessage("◯歳◯性の患者さんとして話します。まずは「本日はどうされましたか？」などと聞いてください。", "patient");
-      }
+      return;
     }
 
-    loadCaseBtn.addEventListener("click", () => {
-      const id = caseIdInput.value || "sample-1";
-      loadCaseById(id);
-    });
+    if (caseStatus) {
+      caseStatus.textContent = "現在の症例: " + key + " ｜ " + (c.title || "無題症例");
+    }
+    addSystemMessage("症例「" + key + " : " + (c.title || "無題症例") + "」を読み込みました。");
 
-    caseIdInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        loadCaseById(caseIdInput.value || "sample-1");
-      }
-    });
+    if (c.note) {
+      addSystemMessage(c.note);
+    }
+    if (c.backdrop) {
+      addChatMessage(c.backdrop, "patient");
+    } else {
+      addChatMessage("◯歳◯性の患者さんとして話します。まずは「本日はどうされましたか？」などと聞いてください。", "patient");
+    }
+  }
 
-    messageForm.addEventListener("submit", (e) => {
+  loadCaseBtn.addEventListener("click", () => {
+    const id = caseIdInput.value || "sample-1";
+    loadCaseById(id);
+  });
+
+  caseIdInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
       e.preventDefault();
-      const text = messageInput.value.trim();
-      if (!text) return;
-      addChatMessage(text, "doctor");
-      const reply = getPatientReply(text);
-      setTimeout(() => {
-        addChatMessage(reply, "patient");
-      }, 150);
-      messageInput.value = "";
-      messageInput.focus();
-    });
+      loadCaseById(caseIdInput.value || "sample-1");
+    }
+  });
 
-    // 初回はサンプル症例を自動ロード
-    loadCaseById("sample-1");
-  </script>
+  messageForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = messageInput.value.trim();
+    if (!text) return;
+    addChatMessage(text, "doctor");
+    const reply = getPatientReply(text);
+    setTimeout(() => {
+      addChatMessage(reply, "patient");
+    }, 150);
+    messageInput.value = "";
+    messageInput.focus();
+  });
+
+  // 初回はサンプル症例を自動ロード
+  loadCaseById("sample-1");
+</script>
+  
 </body>
 </html>
